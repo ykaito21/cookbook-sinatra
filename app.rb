@@ -8,16 +8,28 @@ configure :development do
   BetterErrors.application_root = File.expand_path('..', __FILE__)
 end
 
+require_relative "cookbook"
+require_relative "recipe"
+
 get '/' do
-  @usernames = [ 'ssaunier', 'Papillard' ]
+  cookbook = Cookbook.new(File.join(__dir__, 'recipes.csv'))
+  @recipes = cookbook.all
   erb :index
 end
 
-get '/about' do
-  erb :about
+get '/new' do
+  erb :new
 end
 
-get '/team/:username' do
-  puts params[:username]
-  "The username is #{params[:username]}"
+post '/recipes' do
+  cookbook = Cookbook.new(File.join(__dir__, 'recipes.csv'))
+  recipe = Recipe.new(params[:name], params[:description])
+  cookbook.add(recipe)
+  redirect to '/'
+end
+
+get '/recipes/:index' do
+  cookbook = Cookbook.new(File.join(__dir__, 'recipes.csv'))
+  cookbook.remove_at(params[:index].to_i)
+  redirect to '/'
 end
